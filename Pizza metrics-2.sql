@@ -57,17 +57,23 @@ SELECT
 FROM table1 t
 
 --For each customer, how many delivered pizzas had at least 1 change and how many had no changes?--
-
+--this includes whether any customer took any exclusion or extra--
+WITH table1 AS
+(
 SELECT
-		c.*,
+		c.customer_id,
+		c.exclusions,
+		c.extras,
 		r.cancellation
 FROM customer_orders1 c
-LEFT OUTER JOIN runner_orders r ON (c.order_id= r.order_id)
-WHERE r.cancellation = ' '
-
-
-
-
+INNER JOIN runner_orders r ON (r.order_id = c.order_id)
+WHERE r.cancellation = ' ')
+SELECT
+		t.customer_id,
+		SUM(CASE WHEN (t.exclusions = ' ' AND t.extras = ' ') THEN 1 ELSE 0 END) AS no_change,
+		SUM(CASE WHEN (t.exclusions <> ' ' OR t.extras <> ' ') THEN 1 ELSE 0 END) AS  some_change
+FROM table1 t
+GROUP BY t.customer_id
 
 
 --How many pizzas were delivered that had both exclusions and extras?--
